@@ -1,0 +1,31 @@
+defaultPlacement: end
+enableVersioning: true
+entryTypes:
+  -
+    uid: 5b3c6a14-96b0-4852-94cc-124d03e58002 # Profiles
+handle: profiles
+maxAuthors: 1
+name: Profiles
+previewTargets:
+  -
+    __assoc__:
+      -
+        - label
+        - 'Primary entry page'
+      -
+        - urlFormat
+        - '{url}'
+      -
+        - refresh
+        - '1'
+propagationMethod: all
+siteSettings:
+  f74b1bd9-9820-4257-8ac8-dc12b206f8b6: # craft-messages
+    enabledByDefault: true
+    hasUrls: true
+    template: profiles/_entry.twig
+    uriFormat: 'profiles/{slug}'
+structure:
+  maxLevels: null
+  uid: cc68c463-02a4-467b-a70a-45f61eed7c7d
+type: structure

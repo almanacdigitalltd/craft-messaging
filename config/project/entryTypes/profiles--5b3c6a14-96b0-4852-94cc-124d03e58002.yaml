@@ -1,0 +1,104 @@
+color: null
+description: null
+fieldLayouts:
+  4aecf589-e5a6-4bcf-9b82-f5ab65ff28c9:
+    cardThumbAlignment: end
+    tabs:
+      -
+        elementCondition: null
+        elements:
+          -
+            autocapitalize: true
+            autocomplete: false
+            autocorrect: true
+            class: null
+            dateAdded: '2025-07-13T13:26:00+00:00'
+            disabled: false
+            elementCondition: null
+            id: null
+            includeInCards: false
+            inputType: null
+            instructions: null
+            label: null
+            max: null
+            min: null
+            name: null
+            orientation: null
+            placeholder: null
+            providesThumbs: false
+            readonly: false
+            required: true
+            size: null
+            step: null
+            tip: null
+            title: null
+            type: craft\fieldlayoutelements\entries\EntryTitleField
+            uid: 795c2dc5-c54e-459d-9b65-9989b982a62c
+            userCondition: null
+            warning: null
+            width: 100
+          -
+            dateAdded: '2025-07-13T14:22:15+00:00'
+            editCondition: null
+            elementCondition: null
+            fieldUid: 655859bb-176c-4170-a470-32c339ba3353 # First Name
+            handle: firstName
+            includeInCards: false
+            instructions: null
+            label: null
+            providesThumbs: false
+            required: false
+            tip: null
+            type: craft\fieldlayoutelements\CustomField
+            uid: 4a106b19-b6f6-44b0-8373-efe04cd57e86
+            userCondition: null
+            warning: null
+            width: 100
+          -
+            dateAdded: '2025-07-13T14:22:15+00:00'
+            editCondition: null
+            elementCondition: null
+            fieldUid: fa7f09e7-90ba-42e2-817a-6a9c7ded99b0 # Last Name
+            handle: null
+            includeInCards: false
+            instructions: null
+            label: null
+            providesThumbs: false
+            required: false
+            tip: null
+            type: craft\fieldlayoutelements\CustomField
+            uid: f8aec0c8-342f-4e03-81c9-06a3647cf28f
+            userCondition: null
+            warning: null
+            width: 100
+          -
+            dateAdded: '2025-07-13T14:22:15+00:00'
+            editCondition: null
+            elementCondition: null
+            fieldUid: 495efd84-b676-4e29-8d16-ba1680d57f6a # email
+            handle: null
+            includeInCards: false
+            instructions: null
+            label: null
+            providesThumbs: false
+            required: false
+            tip: null
+            type: craft\fieldlayoutelements\CustomField
+            uid: 07d0d4c2-0a21-477f-b2c1-0e884e910bce
+            userCondition: null
+            warning: null
+            width: 100
+        name: Content
+        uid: 930f861c-a567-4a7f-b0f0-6a3ed592333b
+        userCondition: null
+handle: profiles
+hasTitleField: true
+icon: person
+name: Profiles
+showSlugField: true
+showStatusField: true
+slugTranslationKeyFormat: null
+slugTranslationMethod: site
+titleFormat: null
+titleTranslationKeyFormat: null
+titleTranslationMethod: site
