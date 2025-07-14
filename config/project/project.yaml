@@ -1,8 +1,16 @@
-dateModified: 1752489445
+dateModified: 1752517217
 email:
   fromEmail: ethan@brackstone.dev
   fromName: craft-messages
   transportType: craft\mail\transportadapters\Sendmail
+fs:
+  filesystem:
+    hasUrls: false
+    name: FileSystem
+    settings:
+      path: '@webroot/uploads/messaging'
+    type: craft\fs\Local
+    url: null
 meta:
   __names__:
     5b3c6a14-96b0-4852-94cc-124d03e58002: Profiles # Profiles
@@ -10,6 +18,7 @@ meta:
     495efd84-b676-4e29-8d16-ba1680d57f6a: email # email
     655859bb-176c-4170-a470-32c339ba3353: 'First Name' # First Name
     b2c3a698-8ad6-4918-a120-1cebb04a4761: craft-messages # craft-messages
+    c8c3ffe9-bc5d-4501-98c4-c2d5a447e59b: 'Messaging Uploads' # Messaging Uploads
     cf8719db-dc0c-4545-ae34-514aec0b90fb: Profiles # Profiles
     f74b1bd9-9820-4257-8ac8-dc12b206f8b6: craft-messages # craft-messages
     fa7f09e7-90ba-42e2-817a-6a9c7ded99b0: 'Last Name' # Last Name
