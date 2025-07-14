@@ -1,0 +1,29 @@
+{
+  "name": "almanac/craft-messaging",
+  "type": "craft-plugin",
+  "require": {
+    "php": ">=8.2",
+    "craftcms/cms": "^5.8.0"
+  },
+  "autoload": {
+    "psr-4": {
+      "almanac\\craftmessaging\\": "src/"
+    }
+  },
+  "extra": {
+    "handle": "messaging",
+    "name": "Messaging",
+    "developer": "Almanac",
+    "documentationUrl": ""
+  },
+  "config": {
+    "sort-packages": true,
+    "platform": {
+      "php": "8.2"
+    },
+    "allow-plugins": {
+      "yiisoft/yii2-composer": true,
+      "craftcms/plugin-installer": true
+    }
+  }
+}

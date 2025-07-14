@@ -1,4 +1,4 @@
-dateModified: 1752416535
+dateModified: 1752489445
 email:
   fromEmail: ethan@brackstone.dev
   fromName: craft-messages
@@ -13,6 +13,15 @@ meta:
     cf8719db-dc0c-4545-ae34-514aec0b90fb: Profiles # Profiles
     f74b1bd9-9820-4257-8ac8-dc12b206f8b6: craft-messages # craft-messages
     fa7f09e7-90ba-42e2-817a-6a9c7ded99b0: 'Last Name' # Last Name
+plugins:
+  _messaging:
+    edition: standard
+    enabled: true
+    schemaVersion: 1.0.0
+  messaging:
+    edition: standard
+    enabled: true
+    schemaVersion: 1.0.0
 system:
   edition: solo
   live: true

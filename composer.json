@@ -2,6 +2,7 @@
   "minimum-stability": "dev",
   "prefer-stable": true,
   "require": {
+    "almanac/craft-messaging": "dev-main",
     "craftcms/cms": "^5.0.0",
     "vlucas/phpdotenv": "^5.4.0"
   },
@@ -24,5 +25,11 @@
     "post-root-package-install": [
       "@php -r \"file_exists('.env') || copy('.env.example.dev', '.env');\""
     ]
-  }
+  },
+  "repositories": [
+    {
+      "type": "path",
+      "url": "plugins/messaging"
+    }
+  ]
 }
