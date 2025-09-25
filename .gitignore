@@ -1,7 +1,7 @@
-/.env
-/.idea
-/vendor
-.DS_Store
-
+*.DS_Store
+*.idea/*
+*.log
+*Thumbs.db
 .env
-.env.*
+/node_modules
+/vendor

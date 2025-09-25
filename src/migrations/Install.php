@@ -25,14 +25,17 @@ class Install extends Migration
             'id' => $this->primaryKey(),
             'chatId' => $this->integer()->notNull(),
             'userId' => $this->integer()->notNull(),
-            'joinedAt' => $this->dateTime()->notNull()
+            'joinedAt' => $this->dateTime()->notNull(),
+            'lastDeliveredMessageId' => $this->integer()->null(),
+            'lastReadMessageId' => $this->integer()->null(),
         ]);
         $this->addForeignKey(null, '{{%chat_participants}}', 'chatId', '{{%chats}}', 'id', 'CASCADE');
+        $this->createIndex(null, '{{%chat_participants}}', ['chatId', 'userId', 'lastReadMessageId'], false);
 
         $this->createTable('{{%messages}}', [
             'id' => $this->primaryKey(),
             'chatId' => $this->integer()->notNull(),
-            'senderId' => $this->string()->notNull(),
+            'senderId' => $this->integer()->notNull(),
             'content' => $this->text()->notNull(),
             'type' => $this->string()->notNull()->defaultValue('text'),
             'sentAt' => $this->dateTime()->notNull(),
@@ -40,23 +43,11 @@ class Install extends Migration
         ]);
         $this->addForeignKey(null, '{{%messages}}', 'chatId', '{{%chats}}', 'id', 'CASCADE');
         $this->addForeignKey(null, '{{%messages}}', 'assetId', '{{%assets}}', 'id', 'SET NULL');
-
-        $this->createTable('{{%message_statuses}}', [
-            'id' => $this->primaryKey(),
-            'messageId' => $this->integer()->notNull(),
-            'userId' => $this->integer()->notNull(),
-            'status' => $this->string()->notNull(),
-            'updatedAt' => $this->dateTime()->notNull()
-        ]);
-        $this->addForeignKey(null, '{{%message_statuses}}', 'messageId', '{{%messages}}', 'id', 'CASCADE');
-        $this->createIndex(null, '{{%message_statuses}}', ['messageId', 'userId'], true);
+        $this->createIndex(null, '{{%messages}}', ['chatId', 'id'], false);
 
         return true;
     }
 
-    /**
-     * @inheritdoc
-     */
     public function safeDown(): bool
     {
         $this->dropTableIfExists('{{%message_statuses}}');

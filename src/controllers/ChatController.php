@@ -56,7 +56,6 @@ class ChatController extends Controller
                 'createdAt' => $now,
             ])->execute();
 
-            // Now retrieve the inserted chat ID
             $chatId = $db->getLastInsertID();
 
             $db->createCommand()->batchInsert(
@@ -92,21 +91,60 @@ class ChatController extends Controller
             return $this->asJson(['error' => 'Missing user_id'])->setStatusCode(400);
         }
 
+        $uid = (int) $userId;
+
         $rows = (new Query())
-            ->select(['c.id AS chat_id', 'c.createdAt', 'p2.userId AS participant'])
+            ->select([
+                'c.id AS chat_id',
+                'c.createdAt',
+                'p2.userId AS participant',
+
+                'MAX(m.id) AS latestMessageId',
+                'MAX(m.sentAt) AS latestSentAt',
+
+                new \yii\db\Expression("MAX(CASE WHEN m.senderId <> :uid THEN m.id ELSE 0 END) AS latestInboundId"),
+
+                'cp.lastReadMessageId',
+            ])
             ->from('{{%chat_participants}} p')
             ->innerJoin('{{%chats}} c', 'p.chatId = c.id')
             ->innerJoin('{{%chat_participants}} p2', 'p2.chatId = c.id')
-            ->where(['p.userId' => $userId])
+            ->leftJoin('{{%messages}} m', 'm.chatId = c.id')
+            ->leftJoin('{{%chat_participants}} cp', 'cp.chatId = c.id AND cp.userId = :uid')
+            ->where(['p.userId' => $uid])
+            ->groupBy(['c.id', 'c.createdAt', 'p2.userId', 'cp.lastReadMessageId'])
+            ->params([':uid' => $uid])
             ->all();
 
         $grouped = [];
-
         foreach ($rows as $row) {
-            $chatId = $row['chat_id'];
-            $grouped[$chatId]['chat_id'] = $chatId;
-            $grouped[$chatId]['created_at'] = $row['createdAt'];
-            $grouped[$chatId]['participants'][] = $row['participant'];
+            $chatId = (int) $row['chat_id'];
+            $g = $grouped[$chatId] ?? [
+                'chat_id' => $chatId,
+                'created_at' => $row['createdAt'],
+                'participants' => [],
+                'latest' => null,
+                'hasUnread' => false,
+            ];
+            $g['participants'][] = (int) $row['participant'];
+
+            $latestId = (int) ($row['latestMessageId'] ?? 0);
+            $latestSentAt = $row['latestSentAt'] ?? null;
+            $latestInboundId = (int) ($row['latestInboundId'] ?? 0);
+            $lastRead = (int) ($row['lastReadMessageId'] ?? 0);
+
+            if ($latestId && !$g['latest']) {
+                $g['latest'] = [
+                    'message_id' => $latestId,
+                    'sent_at' => $latestSentAt ? (new \DateTime($latestSentAt))->format(DATE_ATOM) : null,
+                ];
+            }
+
+            if ($latestInboundId > $lastRead) {
+                $g['hasUnread'] = true;
+            }
+
+            $grouped[$chatId] = $g;
         }
 
         return $this->asJson(array_values($grouped));

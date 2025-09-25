@@ -1,8 +1,0 @@
-baseUrl: $PRIMARY_SITE_URL
-handle: default
-hasUrls: true
-language: en
-name: craft-messages
-primary: true
-siteGroup: b2c3a698-8ad6-4918-a120-1cebb04a4761 # craft-messages
-sortOrder: 1
