@@ -9,7 +9,7 @@ use craft\web\Application;
 
 class Plugin extends BasePlugin
 {
-    public string $schemaVersion = '1.0.1';
+    public string $schemaVersion = '1.0.2';
 
     public static function config(): array
     {

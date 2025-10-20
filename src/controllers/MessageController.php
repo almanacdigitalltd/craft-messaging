@@ -35,71 +35,70 @@ class MessageController extends Controller
 
         $db = Craft::$app->getDb();
         $sentAt = (new \DateTime())->format('Y-m-d H:i:s');
-        $content = $request->getBodyParam('content', '');
+        $textContent = trim((string)$request->getBodyParam('content', ''));
 
-        $assetId = null;
+        // Handle multiple file uploads
+        $uploadedFiles = UploadedFile::getInstancesByName('files');
+        $assetIds = [];
+        $fileUrls = [];
 
-        // Handle media uploads
-        if ($type !== 'text') {
-            $uploadedFile = UploadedFile::getInstanceByName('file');
-
-            if (!$uploadedFile) {
-                return $this->asJson(['error' => 'File upload missing'])->setStatusCode(400);
-            }
-
+        if (!empty($uploadedFiles)) {
             $volumeHandle = 'messagingUploads';
             $volume = Craft::$app->getVolumes()->getVolumeByHandle($volumeHandle);
-
             if (!$volume) {
-                return $this->asJson([
-                    'error' => "Upload volume '$volumeHandle' not found"
-                ])->setStatusCode(500);
-            }
-
-            $rootFolder = Craft::$app->getAssets()->getRootFolderByVolumeId($volume->id);
-            if (!$rootFolder) {
-                return $this->asJson(['error' => 'Root folder not found'])->setStatusCode(500);
-            }
-
-            $tempPath = AssetsHelper::tempFilePath($uploadedFile->extension);
-            $uploadedFile->saveAs($tempPath);
-
-            $asset = new Asset();
-            $asset->tempFilePath = $tempPath;
-            $asset->filename      = $uploadedFile->name;
-            $asset->newFolderId   = $rootFolder->id;
-            $asset->volumeId      = $volume->id;
-            $asset->avoidFilenameConflicts = true;
-            $asset->setScenario(Asset::SCENARIO_CREATE);
-
-            if (!Craft::$app->getElements()->saveElement($asset)) {
-                return $this->asJson(['error' => 'Failed to save uploaded file'])
+                return $this->asJson(['error' => "Upload volume '$volumeHandle' not found"])
                     ->setStatusCode(500);
             }
 
-            $assetId = $asset->id;
+            $rootFolder = Craft::$app->getAssets()->getRootFolderByVolumeId($volume->id);
+
+            foreach ($uploadedFiles as $uploadedFile) {
+                $tempPath = AssetsHelper::tempFilePath($uploadedFile->extension);
+                $uploadedFile->saveAs($tempPath);
+
+                $asset = new Asset();
+                $asset->tempFilePath = $tempPath;
+                $asset->filename = $uploadedFile->name;
+                $asset->newFolderId = $rootFolder->id;
+                $asset->volumeId = $volume->id;
+                $asset->avoidFilenameConflicts = true;
+                $asset->setScenario(Asset::SCENARIO_CREATE);
+
+                if (Craft::$app->getElements()->saveElement($asset)) {
+                    $assetIds[] = $asset->id;
+                    $url = $asset->getUrl();
+                    if ($url && !UrlHelper::isAbsoluteUrl($url)) {
+                        $url = rtrim(UrlHelper::baseSiteUrl(), '/') . '/' . ltrim($url, '/');
+                    }
+                    $fileUrls[] = $url;
+                }
+            }
         }
+
+        // Combine text + files into structured content
+        $content = [
+            'text' => $textContent ?: null,
+            'files' => $fileUrls
+        ];
 
         try {
             $db->createCommand()->insert('{{%messages}}', [
                 'chatId' => $chatId,
                 'senderId' => $senderId,
-                'content' => $content,
+                'content' => json_encode($content),
                 'type' => $type,
                 'sentAt' => $sentAt,
-                'assetId' => $assetId
+                'assetId' => !empty($assetIds) ? implode(',', $assetIds) : null
             ])->execute();
 
-            $messageId = (int) $db->getLastInsertID();
-
-            // No per-message status rows anymore.
+            $messageId = (int)$db->getLastInsertID();
 
             return $this->asJson([
                 'message_id' => $messageId,
                 'sent_at' => $sentAt
             ]);
         } catch (Exception $e) {
-            return $this->asErrorJson('Message sending failed');
+            return $this->asErrorJson('Message sending failed: ' . $e->getMessage());
         }
     }
 
@@ -144,24 +143,30 @@ class MessageController extends Controller
         $data = [];
 
         foreach ($messages as $msg) {
-            $content = $msg['content'];
+            $decoded = json_decode($msg['content'], true);
+            if (!is_array($decoded)) {
+                $decoded = ['text' => $msg['content'], 'files' => []];
+            }
 
-            if ($msg['type'] !== 'text' && $msg['assetId']) {
-                $asset = Craft::$app->getAssets()->getAssetById((int) $msg['assetId']);
-                if ($asset) {
-                    $url = $asset->getUrl();
-                    if ($url && !UrlHelper::isAbsoluteUrl($url)) {
-                        $url = rtrim(UrlHelper::baseSiteUrl(), '/') . '/' . ltrim($url, '/');
+            if (!empty($msg['assetId'])) {
+                $ids = explode(',', $msg['assetId']);
+                foreach ($ids as $aid) {
+                    $asset = Craft::$app->getAssets()->getAssetById((int)$aid);
+                    if ($asset) {
+                        $url = $asset->getUrl();
+                        if ($url && !UrlHelper::isAbsoluteUrl($url)) {
+                            $url = rtrim(UrlHelper::baseSiteUrl(), '/') . '/' . ltrim($url, '/');
+                        }
+                        if (!in_array($url, $decoded['files'])) {
+                            $decoded['files'][] = $url;
+                        }
                     }
-                    $content = $url ?: null;
-                } else {
-                    $content = null;
                 }
             }
 
             $status = 'sent';
-            $mid = (int) $msg['id'];
-            $senderIdInt = (int) $msg['senderId'];
+            $mid = (int)$msg['id'];
+            $senderIdInt = (int)$msg['senderId'];
 
             if ($senderIdInt === $userIdInt) {
                 // Sender's view
@@ -176,7 +181,7 @@ class MessageController extends Controller
                         $anyDelivered = true;
                 }
                 $status = $allRead ? 'read' : ($anyDelivered ? 'delivered' : 'sent');
-            } else {
+            } else {                
                 // Recipient's view
                 $myRead = (int) ($me['lastReadMessageId'] ?? 0);
                 $myDelivered = (int) ($me['lastDeliveredMessageId'] ?? 0);
@@ -187,7 +192,7 @@ class MessageController extends Controller
                 'message_id' => $msg['id'],
                 'sender_id' => $msg['senderId'],
                 'type' => $msg['type'],
-                'content' => $content,
+                'content' => $decoded,
                 'sent_at' => (new \DateTime($msg['sentAt']))->format(DATE_ATOM),
                 'status' => $status
             ];
@@ -317,5 +322,4 @@ class MessageController extends Controller
             'results' => $results,
         ]);
     }
-
 }
